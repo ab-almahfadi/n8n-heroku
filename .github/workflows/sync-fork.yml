@@ -1,0 +1,26 @@
+    name: Auto Sync Fork
+
+    on:
+      schedule:
+        - cron: '0 0 0 * *' # Runs daily at midnight UTC
+      workflow_dispatch: # Allows manual triggering
+
+    jobs:
+      sync:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+              token: ${{ secrets.PAT_TOKEN }} # Use a PAT with repo scope
+
+          - name: Add upstream remote
+            run: |
+              git remote add upstream https://github.com/n8n-io/n8n-heroku.git
+              git fetch upstream
+
+          - name: Merge upstream into main
+            run: |
+              git checkout main # Or your desired branch
+              git merge upstream/main # Or upstream/master
+              git push origin main # Or your desired branch
