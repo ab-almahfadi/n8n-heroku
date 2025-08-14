@@ -21,6 +21,4 @@
 
           - name: Merge upstream into main
             run: |
-              git checkout main # Or your desired branch
-              git merge upstream/main # Or upstream/master
               git push origin main # Or your desired branch
