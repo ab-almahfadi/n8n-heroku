@@ -1,24 +1,37 @@
-    name: Auto Sync Fork
+name: Auto Sync Fork
 
-    on:
-      schedule:
-        - cron: '0 0 1 * *' # Runs daily at midnight UTC
-      workflow_dispatch: # Allows manual triggering
+on:
+  schedule:
+    - cron: '0 0 1 * *' # Runs monthly on the 1st at midnight UTC
+  workflow_dispatch: # Allows manual triggering
 
-    jobs:
-      sync:
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout repository
-            uses: actions/checkout@v4
-            with:
-              token: ${{ secrets.PAT_TOKEN }} # Use a PAT with repo scope
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }} # Use a PAT with repo scope
 
-          - name: Add upstream remote
-            run: |
-              git remote add upstream https://github.com/n8n-io/n8n-heroku.git
-              git fetch upstream
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/n8n-io/n8n-heroku.git
+          git fetch upstream
 
-          - name: Merge upstream into main
-            run: |
-              git push origin main # Or your desired branch
+      - name: Merge upstream into main
+        run: |
+          git merge upstream/main || true
+          git push origin main
+
+      - name: Append date to update.txt
+        run: |
+          echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> update.txt
+
+      - name: Commit and push update.txt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add update.txt
+          git commit -m "Update trigger date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" || echo "No changes to commit"
+          git push origin main
